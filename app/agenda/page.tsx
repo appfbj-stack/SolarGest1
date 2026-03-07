@@ -45,6 +45,73 @@ const events = [
 ];
 
 export default function AgendaPage() {
+  const [eventList, setEventList] = useState(events);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    client: "",
+    address: "",
+    time: "",
+    team: "Equipe Alpha",
+    type: "Instalação",
+  });
+
+  const openNewModal = () => {
+    setEditingEventId(null);
+    setNewEvent({
+      title: "",
+      client: "",
+      address: "",
+      time: "",
+      team: "Equipe Alpha",
+      type: "Instalação",
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (event: typeof events[0]) => {
+    setEditingEventId(event.id);
+    setNewEvent({
+      title: event.title,
+      client: event.client,
+      address: event.address,
+      time: event.time,
+      team: event.team,
+      type: event.type,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Determine color based on type
+    let color = "bg-amber-100 border-amber-200 text-amber-800";
+    if (newEvent.type === "Visita") color = "bg-blue-100 border-blue-200 text-blue-800";
+    if (newEvent.type === "Manutenção") color = "bg-emerald-100 border-emerald-200 text-emerald-800";
+
+    if (editingEventId !== null) {
+      // Update existing
+      setEventList(eventList.map(ev =>
+        ev.id === editingEventId
+          ? { ...ev, ...newEvent, color }
+          : ev
+      ));
+    } else {
+      // Create new
+      const newEntry = {
+        id: eventList.length > 0 ? Math.max(...eventList.map(e => e.id)) + 1 : 1,
+        ...newEvent,
+        color,
+      };
+      setEventList([...eventList, newEntry]);
+    }
+
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="sm:flex sm:items-center sm:justify-between">
@@ -60,7 +127,10 @@ export default function AgendaPage() {
           <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
             Hoje
           </button>
-          <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-lg shadow-sm hover:bg-amber-700">
+          <button
+            onClick={openNewModal}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-lg shadow-sm hover:bg-amber-700"
+          >
             Novo Agendamento
           </button>
         </div>
@@ -106,11 +176,10 @@ export default function AgendaPage() {
             {[...Array(31)].map((_, i) => (
               <div
                 key={i}
-                className={`p-2 text-center rounded-full cursor-pointer hover:bg-amber-100 ${
-                  i + 1 === 15
-                    ? "bg-amber-600 text-white hover:bg-amber-700 font-bold"
-                    : "text-slate-700"
-                }`}
+                className={`p-2 text-center rounded-full cursor-pointer hover:bg-amber-100 ${i + 1 === 15
+                  ? "bg-amber-600 text-white hover:bg-amber-700 font-bold"
+                  : "text-slate-700"
+                  }`}
               >
                 {i + 1}
               </div>
@@ -162,9 +231,10 @@ export default function AgendaPage() {
           </div>
 
           <div className="space-y-4">
-            {events.map((event) => (
+            {eventList.map((event) => (
               <div
                 key={event.id}
+                onClick={() => openEditModal(event)}
                 className={`p-4 rounded-xl border ${event.color} bg-opacity-50 hover:bg-opacity-100 transition-colors cursor-pointer`}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -194,9 +264,120 @@ export default function AgendaPage() {
                 </div>
               </div>
             ))}
+            {eventList.length === 0 && (
+              <p className="text-slate-500 text-sm text-center py-8">Nenhum evento agendado para este dia.</p>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Modal Novo Agendamento */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingEventId ? "Editar Agendamento" : "Novo Agendamento"}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleAddEvent} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                <input
+                  required
+                  type="text"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  placeholder="Ex: Instalação 5kWp"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Cliente</label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="Nome do cliente"
+                    value={newEvent.client}
+                    onChange={(e) => setNewEvent({ ...newEvent, client: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                  <select
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    value={newEvent.type}
+                    onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
+                  >
+                    <option>Instalação</option>
+                    <option>Visita</option>
+                    <option>Manutenção</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Endereço</label>
+                <input
+                  required
+                  type="text"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  placeholder="Endereço completo"
+                  value={newEvent.address}
+                  onChange={(e) => setNewEvent({ ...newEvent, address: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Horário</label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="Ex: 09:00 - 12:00"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Equipe</label>
+                  <select
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    value={newEvent.team}
+                    onChange={(e) => setNewEvent({ ...newEvent, team: e.target.value })}
+                  >
+                    <option>Equipe Alpha</option>
+                    <option>Equipe Beta</option>
+                    <option>João Silva</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700"
+                >
+                  Salvar Agendamento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
