@@ -10,141 +10,98 @@ datasource db {
 model Cliente {
   id        String   @id @default(cuid())
   nome      String
-  email     String?  @unique
+  email     String?
   telefone  String?
-  endereco  String?
   cidade    String?
-  estado    String?
+  tipo      String   @default("Residencial")
+  consumo   String?
+  status    String   @default("Novo Lead")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  orcamentos Orcamento[]
-  projetos   Projeto[]
-  ordens     OrdemServico[]
+model Tarefa {
+  id        String   @id @default(cuid())
+  conteudo  String
+  valor     String   @default("R$ 0")
+  dataTexto String   @default("Hoje")
+  coluna    String   @default("Novo Lead")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Financeiro {
+  id        String   @id @default(cuid())
+  descricao String
+  tipo      String
+  valor     Decimal  @db.Decimal(10, 2)
+  categoria String?
+  data      DateTime @default(now())
+  status    String   @default("Pendente")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agenda {
+  id        String   @id @default(cuid())
+  titulo    String
+  cliente   String?
+  endereco  String?
+  horario   String?
+  equipe    String?
+  tipo      String   @default("Instalação")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Equipamento {
-  id        String   @id @default(cuid())
-  codigo    String   @unique
-  nome      String
-  marca     String?
-  tipo      String
-  potencia  String?
-  estoque   Int      @default(0)
-  preco     Decimal  @db.Decimal(10, 2)
-  status    String   @default("Em Estoque")
+  id       String  @id @default(cuid())
+  codigo   String  @unique
+  nome     String
+  marca    String?
+  tipo     String
+  potencia String?
+  estoque  Int     @default(0)
+  preco    Decimal @db.Decimal(10, 2)
+  status   String  @default("Em Estoque")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  itensOrcamento ItemOrcamento[]
-  itensProjeto   ItemProjeto[]
+model Projeto {
+  id            String    @id @default(cuid())
+  titulo        String
+  cliente       String
+  status        String    @default("Planejamento")
+  potencia      String?
+  endereco      String?
+  dataInicio    DateTime?
+  dataConclusao DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Orcamento {
   id          String   @id @default(cuid())
   numero      String   @unique
-  clienteId   String
-  cliente     Cliente  @relation(fields: [clienteId], references: [id])
+  cliente     String
   status      String   @default("Pendente")
   total       Decimal  @db.Decimal(10, 2)
   validade    DateTime?
   observacoes String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  itens ItemOrcamento[]
-}
-
-model ItemOrcamento {
-  id           String      @id @default(cuid())
-  orcamentoId  String
-  orcamento    Orcamento   @relation(fields: [orcamentoId], references: [id])
-  equipamentoId String
-  equipamento  Equipamento @relation(fields: [equipamentoId], references: [id])
-  quantidade   Int
-  precoUnitario Decimal    @db.Decimal(10, 2)
-}
-
-model Projeto {
-  id          String   @id @default(cuid())
-  titulo      String
-  clienteId   String
-  cliente     Cliente  @relation(fields: [clienteId], references: [id])
-  status      String   @default("Planejamento")
-  potencia    String?
-  endereco    String?
-  dataInicio  DateTime?
-  dataConclusao DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  itens  ItemProjeto[]
-  tarefas Tarefa[]
-  ordens OrdemServico[]
-}
-
-model ItemProjeto {
-  id            String      @id @default(cuid())
-  projetoId     String
-  projeto       Projeto     @relation(fields: [projetoId], references: [id])
-  equipamentoId String
-  equipamento   Equipamento @relation(fields: [equipamentoId], references: [id])
-  quantidade    Int
-}
-
-model Tarefa {
-  id        String   @id @default(cuid())
-  titulo    String
-  descricao String?
-  projetoId String?
-  projeto   Projeto? @relation(fields: [projetoId], references: [id])
-  coluna    String   @default("A Fazer")
-  prioridade String  @default("Normal")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model OrdemServico {
-  id          String   @id @default(cuid())
-  numero      String   @unique
-  clienteId   String
-  cliente     Cliente  @relation(fields: [clienteId], references: [id])
-  projetoId   String?
-  projeto     Projeto? @relation(fields: [projetoId], references: [id])
-  tipo        String
-  status      String   @default("Aberta")
-  descricao   String?
-  tecnico     String?
+  id           String    @id @default(cuid())
+  numero       String    @unique
+  cliente      String
+  tipo         String
+  status       String    @default("Aberta")
+  descricao    String?
+  tecnico      String?
   dataAgendada DateTime?
-  dataConclusao DateTime?
-  assinatura  String?
-  fotos       String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Agenda {
-  id        String   @id @default(cuid())
-  titulo    String
-  descricao String?
-  data      DateTime
-  tipo      String   @default("Visita")
-  status    String   @default("Agendado")
-  clienteNome String?
-  tecnico   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Financeiro {
-  id          String   @id @default(cuid())
-  descricao   String
-  tipo        String
-  valor       Decimal  @db.Decimal(10, 2)
-  categoria   String?
-  data        DateTime
-  status      String   @default("Pendente")
-  projetoRef  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
