@@ -1,140 +1,202 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Clock, MapPin, User, Wrench, Plus } from "lucide-react";
+import { useState } from "react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  MapPin,
+  User,
+  Wrench,
+} from "lucide-react";
 
-interface Evento {
-  id: string;
-  titulo: string;
-  cliente: string;
-  endereco: string;
-  horario: string;
-  equipe: string;
-  tipo: string;
-}
-
-const colorMap: Record<string, string> = {
-  "Instalação": "bg-amber-100 border-amber-200 text-amber-800",
-  "Visita": "bg-blue-100 border-blue-200 text-blue-800",
-  "Manutenção": "bg-emerald-100 border-emerald-200 text-emerald-800",
-};
+const events = [
+  {
+    id: 1,
+    title: "Instalação 5.5 kWp",
+    client: "Carlos Mendes",
+    address: "Rua das Flores, 123",
+    time: "08:00 - 17:00",
+    team: "Equipe Alpha",
+    type: "Instalação",
+    color: "bg-amber-100 border-amber-200 text-amber-800",
+  },
+  {
+    id: 2,
+    title: "Visita Técnica",
+    client: "Padaria Pão Quente",
+    address: "Av. Brasil, 456",
+    time: "09:00 - 11:00",
+    team: "João Silva",
+    type: "Visita",
+    color: "bg-blue-100 border-blue-200 text-blue-800",
+  },
+  {
+    id: 3,
+    title: "Manutenção Preventiva",
+    client: "Residência Oliveira",
+    address: "Rua das Árvores, 789",
+    time: "14:00 - 16:00",
+    team: "Equipe Beta",
+    type: "Manutenção",
+    color: "bg-emerald-100 border-emerald-200 text-emerald-800",
+  },
+];
 
 export default function AgendaPage() {
-  const [eventos, setEventos] = useState<Evento[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ titulo: "", cliente: "", endereco: "", horario: "", equipe: "Equipe Alpha", tipo: "Instalação" });
-
-  useEffect(() => {
-    fetch("/api/agenda").then(r => r.json()).then(setEventos).finally(() => setLoading(false));
-  }, []);
-
-  const openNew = () => { setEditingId(null); setForm({ titulo: "", cliente: "", endereco: "", horario: "", equipe: "Equipe Alpha", tipo: "Instalação" }); setIsModalOpen(true); };
-  const openEdit = (e: Evento) => { setEditingId(e.id); setForm({ titulo: e.titulo, cliente: e.cliente, endereco: e.endereco, horario: e.horario, equipe: e.equipe, tipo: e.tipo }); setIsModalOpen(true); };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      const res = await fetch(`/api/agenda/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      const updated = await res.json();
-      setEventos(eventos.map(ev => ev.id === editingId ? updated : ev));
-    } else {
-      const res = await fetch("/api/agenda", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      const novo = await res.json();
-      setEventos([novo, ...eventos]);
-    }
-    setIsModalOpen(false);
-  };
-
   return (
     <div className="space-y-6">
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Agenda de Instalações</h1>
-          <p className="mt-1 text-sm text-slate-500">Gerencie visitas técnicas, instalações e manutenções.</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Agenda de Instalações
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Gerencie as visitas técnicas, instalações e manutenções.
+          </p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <button onClick={openNew} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-lg shadow-sm hover:bg-amber-700">
-            <Plus className="w-4 h-4 mr-2" /> Novo Agendamento
+        <div className="mt-4 sm:mt-0 flex gap-2">
+          <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
+            Hoje
+          </button>
+          <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-lg shadow-sm hover:bg-amber-700">
+            Novo Agendamento
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center mb-4">
-            <CalendarIcon className="w-5 h-5 mr-2 text-amber-600" /> Agendamentos
-          </h2>
-          {loading && <p className="text-center text-slate-500 py-8">Carregando...</p>}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col lg:flex-row">
+        {/* Calendar Sidebar */}
+        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Outubro 2023
+            </h2>
+            <div className="flex space-x-1">
+              <button className="p-1 rounded-md hover:bg-slate-200 text-slate-600">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button className="p-1 rounded-md hover:bg-slate-200 text-slate-600">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500 mb-2">
+            <div>D</div>
+            <div>S</div>
+            <div>T</div>
+            <div>Q</div>
+            <div>Q</div>
+            <div>S</div>
+            <div>S</div>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-sm">
+            {/* Empty cells for offset */}
+            <div className="p-2 text-slate-300 text-center">24</div>
+            <div className="p-2 text-slate-300 text-center">25</div>
+            <div className="p-2 text-slate-300 text-center">26</div>
+            <div className="p-2 text-slate-300 text-center">27</div>
+            <div className="p-2 text-slate-300 text-center">28</div>
+            <div className="p-2 text-slate-300 text-center">29</div>
+            <div className="p-2 text-slate-300 text-center">30</div>
+
+            {/* Actual days */}
+            {[...Array(31)].map((_, i) => (
+              <div
+                key={i}
+                className={`p-2 text-center rounded-full cursor-pointer hover:bg-amber-100 ${
+                  i + 1 === 15
+                    ? "bg-amber-600 text-white hover:bg-amber-700 font-bold"
+                    : "text-slate-700"
+                }`}
+              >
+                {i + 1}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-sm font-medium text-slate-900 mb-3">Equipes</h3>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded text-amber-600 focus:ring-amber-500"
+                  defaultChecked
+                />
+                <span className="ml-2 text-sm text-slate-600">
+                  Equipe Alpha
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded text-amber-600 focus:ring-amber-500"
+                  defaultChecked
+                />
+                <span className="ml-2 text-sm text-slate-600">Equipe Beta</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded text-amber-600 focus:ring-amber-500"
+                  defaultChecked
+                />
+                <span className="ml-2 text-sm text-slate-600">
+                  João Silva (Visitas)
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Daily Schedule */}
+        <div className="flex-1 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-slate-900 flex items-center">
+              <CalendarIcon className="w-5 h-5 mr-2 text-amber-600" />
+              Terça-feira, 15 de Outubro
+            </h2>
+          </div>
+
           <div className="space-y-4">
-            {!loading && eventos.map((evento) => (
-              <div key={evento.id} onClick={() => openEdit(evento)} className={`p-4 rounded-xl border ${colorMap[evento.tipo] || "bg-slate-100 border-slate-200 text-slate-800"} hover:opacity-90 transition-opacity cursor-pointer`}>
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className={`p-4 rounded-xl border ${event.color} bg-opacity-50 hover:bg-opacity-100 transition-colors cursor-pointer`}
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold">{evento.titulo}</h3>
-                  <span className="text-xs font-semibold uppercase tracking-wider px-2 py-1 bg-white/50 rounded-md">{evento.tipo}</span>
+                  <h3 className="font-bold">{event.title}</h3>
+                  <span className="text-xs font-semibold uppercase tracking-wider px-2 py-1 bg-white/50 rounded-md">
+                    {event.type}
+                  </span>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 text-sm opacity-90">
-                  <div className="flex items-center"><User className="w-4 h-4 mr-2" />{evento.cliente}</div>
-                  <div className="flex items-center"><Clock className="w-4 h-4 mr-2" />{evento.horario}</div>
-                  <div className="flex items-center"><MapPin className="w-4 h-4 mr-2" />{evento.endereco}</div>
-                  <div className="flex items-center"><Wrench className="w-4 h-4 mr-2" />{evento.equipe}</div>
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2" />
+                    {event.client}
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {event.time}
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {event.address}
+                  </div>
+                  <div className="flex items-center">
+                    <Wrench className="w-4 h-4 mr-2" />
+                    {event.team}
+                  </div>
                 </div>
               </div>
             ))}
-            {!loading && eventos.length === 0 && <p className="text-slate-500 text-sm text-center py-8">Nenhum evento agendado.</p>}
           </div>
         </div>
       </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{editingId ? "Editar" : "Novo"} Agendamento</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Título</label>
-                <input required type="text" className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ex: Instalação 5kWp" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cliente</label>
-                  <input required type="text" className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} placeholder="Nome do cliente" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipo</label>
-                  <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })}>
-                    <option>Instalação</option><option>Visita</option><option>Manutenção</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Endereço</label>
-                <input required type="text" className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.endereco} onChange={(e) => setForm({ ...form, endereco: e.target.value })} placeholder="Endereço completo" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Horário</label>
-                  <input required type="text" className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.horario} onChange={(e) => setForm({ ...form, horario: e.target.value })} placeholder="Ex: 09:00 - 12:00" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Equipe</label>
-                  <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-slate-100" value={form.equipe} onChange={(e) => setForm({ ...form, equipe: e.target.value })}>
-                    <option>Equipe Alpha</option><option>Equipe Beta</option><option>João Silva</option>
-                  </select>
-                </div>
-              </div>
-              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700">Salvar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

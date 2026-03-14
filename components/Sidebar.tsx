@@ -15,11 +15,9 @@ import {
   Settings,
   Menu,
   Sun,
-  Moon,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -36,15 +34,9 @@ const navItems = [
 export function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans">
+    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobileOpen && (
@@ -61,17 +53,14 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ x: isMobileOpen ? 0 : 0 }}
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 lg:static transition-transform duration-300 ease-in-out ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
+        animate={{ x: isMobileOpen ? 0 : "-100%" }}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out`}
       >
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center">
-            <Sun className="w-8 h-8 text-amber-500 mr-2" />
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              SolarGest
-            </span>
-          </div>
+        <div className="flex items-center h-16 px-6 border-b border-slate-200">
+          <Sun className="w-8 h-8 text-amber-500 mr-2" />
+          <span className="text-xl font-bold tracking-tight text-slate-900">
+            SolarGest
+          </span>
         </div>
         <div className="flex flex-col flex-1 py-4 overflow-y-auto">
           <nav className="flex-1 px-4 space-y-1">
@@ -82,42 +71,28 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                   key={item.name}
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${isActive
-                    ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-500"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-                    }`}
+                  className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-amber-50 text-amber-700"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
                 >
                   <item.icon
-                    className={`w-5 h-5 mr-3 flex-shrink-0 ${isActive ? "text-amber-600 dark:text-amber-500" : "text-slate-400 dark:text-slate-500"
-                      }`}
+                    className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                      isActive ? "text-amber-600" : "text-slate-400"
+                    }`}
                   />
                   {item.name}
                 </Link>
               );
             })}
           </nav>
-          <div className="px-4 mt-auto mb-4 space-y-1">
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-            >
-              {mounted && theme === "dark" ? (
-                <>
-                  <Sun className="w-5 h-5 mr-3 text-amber-500" />
-                  Modo Claro
-                </>
-              ) : (
-                <>
-                  <Moon className="w-5 h-5 mr-3 text-slate-400" />
-                  Modo Escuro
-                </>
-              )}
-            </button>
+          <div className="px-4 mt-auto">
             <Link
               href="/configuracoes"
-              className="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+              className="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
             >
-              <Settings className="w-5 h-5 mr-3 text-slate-400 dark:text-slate-500" />
+              <Settings className="w-5 h-5 mr-3 text-slate-400" />
               Configurações
             </Link>
           </div>
@@ -127,10 +102,10 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sm:px-6 lg:px-8">
+        <header className="flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 sm:px-6 lg:px-8">
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 -ml-2 text-slate-500 dark:text-slate-400 rounded-md lg:hidden hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500"
+            className="p-2 -ml-2 text-slate-500 rounded-md lg:hidden hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500"
           >
             <span className="sr-only">Open sidebar</span>
             <Menu className="w-6 h-6" />
@@ -142,7 +117,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                 <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm border border-amber-200">
                   JS
                 </div>
-                <span className="ml-2 text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:block">
+                <span className="ml-2 text-sm font-medium text-slate-700 hidden sm:block">
                   João Silva
                 </span>
               </div>
@@ -151,7 +126,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors">
+        <main className="flex-1 overflow-y-auto bg-slate-50">
           <div className="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             {children}
           </div>

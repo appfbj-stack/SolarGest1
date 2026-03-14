@@ -66,20 +66,6 @@ const equipment = [
 
 export default function EquipamentosPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todas as Categorias");
-
-  const filteredEquipment = equipment.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "Todas as Categorias" ||
-      item.type === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <div className="space-y-6">
@@ -182,11 +168,7 @@ export default function EquipamentosPage() {
           />
         </div>
         <div className="flex gap-2">
-          <select
-            className="block w-full py-2 pl-3 pr-10 text-base border-slate-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-lg"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
+          <select className="block w-full py-2 pl-3 pr-10 text-base border-slate-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-lg">
             <option>Todas as Categorias</option>
             <option>Painel Solar</option>
             <option>Inversor</option>
@@ -245,69 +227,59 @@ export default function EquipamentosPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
-              {filteredEquipment.length > 0 ? (
-                filteredEquipment.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <td className="py-4 pl-6 pr-3 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                          {item.type === "Painel Solar" ? (
-                            <Zap className="w-5 h-5" />
-                          ) : (
-                            <Package className="w-5 h-5" />
-                          )}
+              {equipment.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  <td className="py-4 pl-6 pr-3 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        {item.type === "Painel Solar" ? (
+                          <Zap className="w-5 h-5" />
+                        ) : (
+                          <Package className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-slate-900">
+                          {item.name}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-slate-900">
-                            {item.name}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {item.id} • {item.brand}
-                          </div>
+                        <div className="text-xs text-slate-500">
+                          {item.id} • {item.brand}
                         </div>
                       </div>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                        {item.type}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {item.power}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-900 font-medium">
-                      {item.stock} un
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {item.price}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "Em Estoque"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : item.status === "Estoque Baixo"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="py-8 text-center text-sm text-slate-500"
-                  >
-                    Nenhum equipamento encontrado.
+                    </div>
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                      {item.type}
+                    </span>
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-500">
+                    {item.power}
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-900 font-medium">
+                    {item.stock} un
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-500">
+                    {item.price}
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.status === "Em Estoque"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : item.status === "Estoque Baixo"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
